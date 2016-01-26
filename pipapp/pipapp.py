@@ -49,8 +49,8 @@ args=None
 
 def parseCommandLineArgs():
     #parse command line args
-    parser = argparse.ArgumentParser(description='PipApp.')
-    parser.add_argument('-d','--dir', nargs=1,metavar='DIR', help='Directory where to set up files and dirs. Default is given project name in current directory.')
+    parser = argparse.ArgumentParser(description='PipApp. %s' % DESCRIPTION)
+    parser.add_argument('-d','--dir', nargs=1,metavar='DIR', help='Root directory where to create new project files and dirs. Default is current directory.')
     parser.add_argument('-v,--version', action='version', version="%s v%s" % (PROGRAMNAME, VERSION))
     parser.add_argument('args', nargs=argparse.REMAINDER)
     global args
@@ -113,7 +113,7 @@ def main():
     global BASEDIR
     BASEDIR=PROJECTNAME
     if args.dir:
-        BASEDIR=args.dir[0]
+        BASEDIR="%s/%s" % (args.dir[0],PROJECTNAME)
     createDirectory(BASEDIR)
 
     print("Generating files for project %s in dir %s..." % (PROJECTNAME,BASEDIR))
