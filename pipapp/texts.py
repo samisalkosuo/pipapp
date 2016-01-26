@@ -203,6 +203,7 @@ COPYRIGHT="(C) {currentYear:s} {author:s}"
 
 def main():
     #program logic here
+    print("TODO: the application")
     pass
 
 if __name__ == "__main__": 
