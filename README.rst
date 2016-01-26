@@ -26,7 +26,7 @@ and basic set of files and directories (as descibed in no-nonsense blog post) ar
 
 If current directory is not good, you can specify directory where to create files and dirs::
 
-	-d, --dir DIR	Directory where to create files.
+	-d DIR, --dir DIR  Root directory where to create new project files and dirs. Default is current directory.
 
 About
 -----
