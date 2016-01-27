@@ -24,13 +24,13 @@
 # THE SOFTWARE.
 
 #add correct version number here
-__version__ = "0.1"
+__version__ = "0.2"
 
 PROGRAMNAME="PipApp"
 VERSION=__version__
 COPYRIGHT="(C) 2016 Sami Salkosuo"
 LICENSE="Licensed under The MIT License."
-DESCRIPTION=["Create files and directories for pip-dist enabled Python apps."]
+DESCRIPTION="Create files and directories for pip-dist enabled Python apps."
 CONFIG_FILE=".pipapp_defaults"
 
 import argparse
@@ -52,7 +52,7 @@ def parseCommandLineArgs():
     parser = argparse.ArgumentParser(description='PipApp. %s' % DESCRIPTION)
     parser.add_argument('-d','--dir', nargs=1,metavar='DIR', help='Root directory where to create new project files and dirs. Default is current directory.')
     parser.add_argument('-v,--version', action='version', version="%s v%s" % (PROGRAMNAME, VERSION))
-    parser.add_argument('args', nargs=argparse.REMAINDER)
+    parser.add_argument("projectname",metavar='PROJECTNAME', nargs=1)
     global args
     args = parser.parse_args()
 
@@ -106,10 +106,8 @@ def createDirectory(directoryName):
 def main():
 
     parseCommandLineArgs()
-    if len(args.args)==0:
-        print("Project name missing. Use %s PROJECTNAME." % sys.argv[0])
-        sys.exit(1)
-    PROJECTNAME=args.args[0]
+
+    PROJECTNAME=args.projectname[0]
     global BASEDIR
     BASEDIR=PROJECTNAME
     if args.dir:
