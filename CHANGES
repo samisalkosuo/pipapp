@@ -1,3 +1,7 @@
+Version 0.3 (28.01.2016)
+
+- Added commented 'install_requires'-keyword to setup.py that gets generated.
+
 Version 0.2 (27.01.2016)
 
 - Improved command line parsing and usage string.

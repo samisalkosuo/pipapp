@@ -141,6 +141,8 @@ with open("README.rst", "rb") as f:
 setup(
     name = projectName,
     packages = [projectName],
+    #add required packages to install_requires list
+    #install_requires=["package","package2"]
     entry_points = {{
         "console_scripts": ['%s = %s.%s:main' % (projectName,projectName,projectName)]
         }},
@@ -168,9 +170,7 @@ def getInitPy(projectName):
 def getMainPy(projectName):
     txt='''# -*- coding: utf-8 -*-
  
- 
 """{pName:s}.__main__: executed when {pName:s} directory is called as script."""
- 
  
 from .{pName:s} import main
 main()

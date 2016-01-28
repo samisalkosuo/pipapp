@@ -28,6 +28,23 @@ If current directory is not good, you can specify directory where to create file
 
 	-d DIR, --dir DIR  Root directory where to create new project files and dirs. Default is current directory.
 
+For example, if you execute *pipapp hobbyproject*, you get following directories and files in your current directory::
+
+	hobbyproject/
+	├── CHANGES
+	├── hobbyproject
+	│   ├── __init__.py
+	│   ├── __main__.py
+	│   └── hobbyproject.py
+	├── hobbyproject-runner.py
+	├── LICENSE
+	├── MANIFEST.in
+	├── README.rst
+	├── setup.cfg
+	└── setup.py
+
+When first executing the script a file *$HOME/.pipapp_defaults* is created. The file includes some configuration items such as author name and email and set of classifiers to be used in generated setup.py.
+
 About
 -----
 
