@@ -24,7 +24,7 @@
 # THE SOFTWARE.
 
 #add correct version number here
-__version__ = "0.3"
+__version__ = "0.4"
 
 PROGRAMNAME="PipApp"
 VERSION=__version__

@@ -120,7 +120,7 @@ def getSetupPy(projectName,config):
  
  
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
 projectName="{pName:s}"
 scriptFile="%s/%s.py" % (projectName,projectName)
@@ -140,7 +140,7 @@ with open("README.rst", "rb") as f:
  
 setup(
     name = projectName,
-    packages = [projectName],
+    packages = find_packages(),
     #add required packages to install_requires list
     #install_requires=["package","package2"]
     entry_points = {{

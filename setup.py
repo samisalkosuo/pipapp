@@ -5,7 +5,7 @@
  
  
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
 projectName="pipapp"
 scriptFile="%s/%s.py" % (projectName,projectName)
@@ -25,7 +25,7 @@ with open("README.rst", "rb") as f:
  
 setup(
     name = projectName,
-    packages = [projectName],
+    packages = find_packages(),
     entry_points = {
         "console_scripts": ['%s = %s.%s:main' % (projectName,projectName,projectName)]
         },

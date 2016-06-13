@@ -1,3 +1,7 @@
+Version 0.4 (13.06.2016)
+
+- Added find_packages() to generated setup.py.
+
 Version 0.3 (28.01.2016)
 
 - Added commented 'install_requires'-keyword to setup.py that gets generated.
