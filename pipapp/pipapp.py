@@ -26,8 +26,7 @@
 
 import argparse
 import configparser
-import os
-from os.path import expanduser
+from pathlib import Path
 
 from .texts import *
 
@@ -42,18 +41,11 @@ DESCRIPTION = "Create files and directories for pip-dist enabled Python apps."
 CONFIG_FILE = ".pipapp_defaults"
 
 
-BASEDIR = "."
-PROJECTNAME = None
-# command line args
-args = None
-
-
 def parse_command_line_args():
     """parse command line args"""
     parser = argparse.ArgumentParser(description='PipApp. {}'.format(DESCRIPTION))
     parser.add_argument(
         '-d', '--dir',
-        nargs=1,
         metavar='DIR',
         help='Root directory where to create new project files and dirs. Default is current directory.'
     )
@@ -63,20 +55,18 @@ def parse_command_line_args():
         version='{} v{}'.format(PROGRAMNAME, VERSION)
     )
     parser.add_argument(
-        "projectname",
+        "project_name",
         metavar='PROJECTNAME',
-        nargs=1
+        help="Name of the generated Project. Has to be a valid Python identifier."
     )
-    global args
-    args = parser.parse_args()
+    return parser.parse_args()
 
 
 def read_config():
-    home_dir = expanduser("~")
-    config_file = "{}/{}".format(home_dir, CONFIG_FILE)
+    config_file = Path("~").expanduser() / CONFIG_FILE
     config = configparser.ConfigParser()
 
-    if not os.path.isfile(config_file):
+    if not config_file.exists():
         # create default configuration
         cfg = {
             'author': "Your Name",
@@ -95,19 +85,20 @@ def read_config():
         }
 
         config['DEFAULT'] = cfg
-        with open(config_file, 'w') as configfile:
-            config.write(configfile)
+        with open(str(config_file), 'w') as open_config_file:
+            config.write(open_config_file)
 
     # read configuration
-    config.read(config_file)
+    config.read(str(config_file))
 
     return config["DEFAULT"]
 
 
-def create_file(file_name, file_contents, directory):
-    print("Generating {}/{}....".format(directory, file_name), end="")
+def create_file(file_name, file_contents, directory: Path):
+    file_path = directory / file_name
+    print("Generating {}… ".format(str(file_path)), end="")
 
-    with open("{}/{}".format(directory, file_name), "w") as f:
+    with open(str(file_path), "w") as f:
         if isinstance(file_contents, list):
             for line in file_contents:
                 print(line, file=f)
@@ -116,64 +107,63 @@ def create_file(file_name, file_contents, directory):
     print("Done.")
 
 
-def create_directory(directory_name):
-    if not os.path.exists(directory_name):
-        os.makedirs(directory_name)
+def create_directory(directory_name: Path):
+    if not directory_name.exists():
+        directory_name.mkdir(parents=True)
 
 
 def main():
 
-    parse_command_line_args()
+    args = parse_command_line_args()
 
-    PROJECTNAME = args.projectname[0]
-    global BASEDIR
-    BASEDIR = PROJECTNAME
+    project_name = args.project_name
+    base_directory = Path(".") / project_name
     if args.dir:
-        BASEDIR = "{}/{}".format(args.dir[0], PROJECTNAME)
-    create_directory(BASEDIR)
+        base_directory = Path(args.dir).expanduser() / args.project_name
+    create_directory(base_directory)
 
-    print("Generating files for project {} in dir {}...".format(PROJECTNAME, BASEDIR))
+    print("Generating files for project {} in directory {}...".format(project_name, base_directory))
 
     config = read_config()
 
     # file: README.rst
-    create_file("README.rst", get_readme_txt(PROJECTNAME), BASEDIR)
+    create_file("README.rst", get_readme_txt(project_name), base_directory)
 
     # file: CHANGES
     current_date = datetime.date.today().strftime("%d.%m.%Y")
     changes = ["Version 0.0.1 ({})".format(current_date), "", "- Initial version."]
-    create_file("CHANGES", changes, BASEDIR)
+    create_file("CHANGES", changes, base_directory)
 
     # file: LICENSE
     license_text = get_license_txt(config['author'])
-    create_file("LICENSE", license_text, BASEDIR)
+    create_file("LICENSE", license_text, base_directory)
     
     # file: setup.cfg
-    create_file("setup.cfg", get_setup_cfg_txt(), BASEDIR)
+    create_file("setup.cfg", get_setup_cfg_txt(), base_directory)
 
     # file: PROJECTNAME-runner.py
-    create_file("{}-runner.py".format(PROJECTNAME), get_runner_txt(PROJECTNAME), BASEDIR)
+    create_file("{}-runner.py".format(project_name), get_runner_txt(project_name), base_directory)
 
     # file: setup.py
-    create_file("setup.py", get_setup_py(PROJECTNAME, config), BASEDIR)
+    create_file("setup.py", get_setup_py(project_name, config), base_directory)
 
     # file: MANIFEST.in
-    create_file("MANIFEST.in", get_manifest_in(PROJECTNAME), BASEDIR)
+    create_file("MANIFEST.in", get_manifest_in(project_name), base_directory)
 
     # create dir: PROJECTNAME
-    src_dir=BASEDIR+"/"+PROJECTNAME
-    print("Creating dir: {}...".format(src_dir), end="")
+    src_dir = base_directory / project_name
+    print("Creating dir: {}… ".format(src_dir), end="")
     create_directory(src_dir)
     print("Done.")
 
     # file: PROJECTNAME/PROJECTNAME.py
-    create_file("{}.py".format(PROJECTNAME), get_main_source(PROJECTNAME, license_text, config), src_dir)
+    create_file("{}.py".format(project_name), get_main_source(project_name, license_text, config), src_dir)
     
     # file: PROJECTNAME/__init__.py
-    create_file("__init__.py", get_init_py(PROJECTNAME), src_dir)
+    create_file("__init__.py", get_init_py(project_name), src_dir)
 
     # file: PROJECTNAME/__main__.py
-    create_file("__main__.py", get_main_py(PROJECTNAME), src_dir)
+    create_file("__main__.py", get_main_py(project_name), src_dir)
 
 
 if __name__ == "__main__": 
