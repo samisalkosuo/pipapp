@@ -141,7 +141,7 @@ def main():
 
     # file: CHANGES
     current_date = datetime.date.today().strftime("%d.%m.%Y")
-    changes = ["Version 0.1 ({})".format(current_date), "", "- Initial version."]
+    changes = ["Version 0.0.1 ({})".format(current_date), "", "- Initial version."]
     create_file("CHANGES", changes, BASEDIR)
 
     # file: LICENSE
