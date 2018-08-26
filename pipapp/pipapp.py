@@ -117,6 +117,8 @@ def main():
     args = parse_command_line_args()
 
     project_name = args.project_name
+    if not project_name:
+        raise ValueError("Project name must not be empty!")
     base_directory = Path(".") / project_name
     if args.dir:
         base_directory = Path(args.dir).expanduser() / args.project_name
