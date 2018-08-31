@@ -23,140 +23,149 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-#add correct version number here
-__version__ = "0.4"
-
-PROGRAMNAME="PipApp"
-VERSION=__version__
-COPYRIGHT="(C) 2016 Sami Salkosuo"
-LICENSE="Licensed under The MIT License."
-DESCRIPTION="Create files and directories for pip-dist enabled Python apps."
-CONFIG_FILE=".pipapp_defaults"
 
 import argparse
 import configparser
-import os
-import datetime
-import sys
+from pathlib import Path
+
 from .texts import *
 
-from os.path import expanduser
+# add correct version number here
+__version__ = "0.4"
 
-BASEDIR="."
-PROJECTNAME=None
-#command line args
-args=None
+PROGRAMNAME = "PipApp"
+VERSION = __version__
+COPYRIGHT = "(C) 2016 Sami Salkosuo"
+LICENSE = "Licensed under The MIT License."
+DESCRIPTION = "Create files and directories for pip-dist enabled Python apps."
+CONFIG_FILE = ".pipapp_defaults"
 
-def parseCommandLineArgs():
-    #parse command line args
-    parser = argparse.ArgumentParser(description='PipApp. %s' % DESCRIPTION)
-    parser.add_argument('-d','--dir', nargs=1,metavar='DIR', help='Root directory where to create new project files and dirs. Default is current directory.')
-    parser.add_argument('-v,--version', action='version', version="%s v%s" % (PROGRAMNAME, VERSION))
-    parser.add_argument("projectname",metavar='PROJECTNAME', nargs=1)
-    global args
-    args = parser.parse_args()
 
-def readConfig():
-    homeDir = expanduser("~")
-    configFile="%s/%s" % (homeDir,CONFIG_FILE)
+def parse_command_line_args():
+    """parse command line args"""
+    parser = argparse.ArgumentParser(description='PipApp. {}'.format(DESCRIPTION))
+    parser.add_argument(
+        '-d', '--dir',
+        metavar='DIR',
+        help='Root directory where to create new project files and dirs. Default is current directory.'
+    )
+    parser.add_argument(
+        '-v,', '--version',
+        action='version',
+        version='{} v{}'.format(PROGRAMNAME, VERSION)
+    )
+    parser.add_argument(
+        "project_name",
+        metavar='PROJECTNAME',
+        help="Name of the generated Project. Has to be a valid Python identifier."
+    )
+    return parser.parse_args()
+
+
+def read_config():
+    config_file = Path("~").expanduser() / CONFIG_FILE
     config = configparser.ConfigParser()
 
-    if os.path.isfile(configFile) == False:
-        #create default configrutaion
-        cfg={}
-        cfg['author']="Your Name"
-        cfg['author_email']="Your Email"
-        cfg['url']="http://Project.url.here"
-        cfg['license']="MIT"
-        cfg['classifiers']=["Development Status :: 1 - Planning",
-                            "License :: OSI Approved :: MIT License",
-                            "Environment :: Console",
-                            "Natural Language :: English",
-                            "Operating System :: OS Independent",
-                            "Programming Language :: Python :: 3.4",
-                            "Programming Language :: Python :: 3.5",
-                            "Programming Language :: Python :: 3 :: Only"]
-
+    if not config_file.exists():
+        # create default configuration
+        cfg = {
+            'author': "Your Name",
+            'author_email': "Your Email",
+            'url': "http://Project.url.here", 'license': "MIT",
+            'classifiers': [
+                   "Development Status :: 1 - Planning",
+                   "License :: OSI Approved :: MIT License",
+                   "Environment :: Console",
+                   "Natural Language :: English",
+                   "Operating System :: OS Independent",
+                   "Programming Language :: Python :: 3.4",
+                   "Programming Language :: Python :: 3.5",
+                   "Programming Language :: Python :: 3 :: Only"
+               ]
+        }
 
         config['DEFAULT'] = cfg
-        with open(configFile, 'w') as configfile:
-            config.write(configfile)
+        with open(str(config_file), 'w') as open_config_file:
+            config.write(open_config_file)
 
-    #read configurato
-    config.read(configFile)
+    # read configuration
+    config.read(str(config_file))
 
     return config["DEFAULT"]
 
 
-def createFile(fileName,fileContents,directory):
-    print("Generating %s/%s...." % (directory,fileName), end="")
-    f=open("%s/%s" % (directory,fileName) ,"w")
-    if isinstance(fileContents, (list)):
-        for line in fileContents:
-            print(line,file=f)
-    else:
-        print(fileContents,file=f,end="")
-    f.close()
+def create_file(file_name, file_contents, directory: Path):
+    file_path = directory / file_name
+    print("Generating {}… ".format(str(file_path)), end="")
+
+    with open(str(file_path), "w") as f:
+        if isinstance(file_contents, list):
+            for line in file_contents:
+                print(line, file=f)
+        else:
+            print(file_contents, file=f, end="")
     print("Done.")
 
-def createDirectory(directoryName):
-    if not os.path.exists(directoryName):
-        os.makedirs(directoryName)
+
+def create_directory(directory_name: Path):
+    if not directory_name.exists():
+        directory_name.mkdir(parents=True)
+
 
 def main():
 
-    parseCommandLineArgs()
+    args = parse_command_line_args()
 
-    PROJECTNAME=args.projectname[0]
-    global BASEDIR
-    BASEDIR=PROJECTNAME
+    project_name = args.project_name
+    if not project_name:
+        raise ValueError("Project name must not be empty!")
+    base_directory = Path(".") / project_name
     if args.dir:
-        BASEDIR="%s/%s" % (args.dir[0],PROJECTNAME)
-    createDirectory(BASEDIR)
+        base_directory = Path(args.dir).expanduser() / args.project_name
+    create_directory(base_directory)
 
-    print("Generating files for project %s in dir %s..." % (PROJECTNAME,BASEDIR))
+    print("Generating files for project {} in directory {}...".format(project_name, base_directory))
 
-    config=readConfig()
+    config = read_config()
 
-    #file: README.rst
-    createFile("README.rst",getReadmeTxt(PROJECTNAME),BASEDIR)
+    # file: README.rst
+    create_file("README.rst", get_readme_txt(project_name), base_directory)
 
-    #file: CHANGES
-    currentDate=datetime.date.today().strftime("%d.%m.%Y")
-    changes=["Version 0.1 (%s)" % currentDate,"","- Initial version."]
-    createFile("CHANGES",changes,BASEDIR)
+    # file: CHANGES
+    current_date = datetime.date.today().strftime("%d.%m.%Y")
+    changes = ["Version 0.0.1 ({})".format(current_date), "", "- Initial version."]
+    create_file("CHANGES", changes, base_directory)
 
-    #file: LICENSE
-    license=getLicenseTxt(config['author'])
-    createFile("LICENSE",license,BASEDIR)
+    # file: LICENSE
+    license_text = get_license_txt(config['author'])
+    create_file("LICENSE", license_text, base_directory)
     
-    #file: setup.cfg
-    createFile("setup.cfg",getSetupCfgTxt(),BASEDIR)
+    # file: setup.cfg
+    create_file("setup.cfg", get_setup_cfg_txt(), base_directory)
 
-    #file: PROJECTNAME-runner.py
-    createFile("%s-runner.py" % PROJECTNAME,getRunnerTxt(PROJECTNAME),BASEDIR)
+    # file: PROJECTNAME-runner.py
+    create_file("{}-runner.py".format(project_name), get_runner_txt(project_name), base_directory)
 
-    #file: setup.py
-    createFile("setup.py",getSetupPy(PROJECTNAME,config),BASEDIR)
+    # file: setup.py
+    create_file("setup.py", get_setup_py(project_name, config), base_directory)
 
-    #file: MANIFEST.in
-    createFile("MANIFEST.in",getManifestIn(PROJECTNAME),BASEDIR)
+    # file: MANIFEST.in
+    create_file("MANIFEST.in", get_manifest_in(project_name), base_directory)
 
-    #create dir: PROJECTNAME
-    srcDir=BASEDIR+"/"+PROJECTNAME
-    print("Creating dir: %s..." % srcDir, end="")
-    createDirectory(srcDir)
+    # create dir: PROJECTNAME
+    src_dir = base_directory / project_name
+    print("Creating dir: {}… ".format(src_dir), end="")
+    create_directory(src_dir)
     print("Done.")
 
-    #file: PROJECTNAME/PROJECTNAME.py
-    createFile("%s.py" % PROJECTNAME,getMainSource(PROJECTNAME,license,config),srcDir)
+    # file: PROJECTNAME/PROJECTNAME.py
+    create_file("{}.py".format(project_name), get_main_source(project_name, license_text, config), src_dir)
     
-    #file: PROJECTNAME/__init__.py
-    createFile("__init__.py" ,getInitPy(PROJECTNAME),srcDir)
+    # file: PROJECTNAME/__init__.py
+    create_file("__init__.py", get_init_py(project_name), src_dir)
 
-    #file: PROJECTNAME/__main__.py
-    createFile("__main__.py" ,getMainPy(PROJECTNAME),srcDir)
-
+    # file: PROJECTNAME/__main__.py
+    create_file("__main__.py", get_main_py(project_name), src_dir)
 
 
 if __name__ == "__main__": 
